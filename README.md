@@ -1,2 +1,632 @@
-# Project_A
-very first repository to store all pratice codes
+ ===  G I T  ===
+
+.) stash
+     git stash list
+     git stash push -m 'ZTG-7064, 1st commit'     # stash changes
+     git stash push -u -m 'ZTG-7064, 1st commit'  # untracked files stashed as well
+     git stash apply --index 0                    # apply but do not remove the state from the stash list
+     git stash drop stash@{0}                     # Remove, single, stash entry
+     git stash show [-p]
+     git stash show -p stash@{0} > stash.diff
+     git apply stash.diff
+     git diff stash@{0}
+     git diff stash@{0} stash@{1}
+
+.) create branch
+     git checkout -b iss53                         # create a branch and switch to it at the same time
+
+.) delete branch
+     git push -d origin <branch_name>    # delete remote branch
+     git branch -d <branch_name>         # delete local branch
+
+.) prune branches (deleting references to non-existing remote branches)
+     git remote prune origin
+     - where origin comes from ...
+     $ git remote -v
+     $ origin  https://gitserver.com/user/repository.git (fetch)
+     
+.) rename branch
+     git branch -m new_branch                      # Rename branch locally (if in the branch to be renamed)
+     git branch -m old_branch new_branch           # Rename branch locally (if not in the branch to be renamed)   
+     git push origin :old_branch                   # Delete the old branch    
+     git push --set-upstream origin new_branch     # Push the new branch, set local branch to track the new remote
+
+.) merge specific files from another branch
+     git checkout source_branch file_to_merge
+
+.) squash commits
+     git merge --squash branch_name
+
+.) checkout by date
+     git checkout `git rev-list -n 1 --first-parent --before="2020-07-27 13:37" master`
+
+.) clone tag v3.6     
+     git clone --branch v3.6 https://github.com/tecris/docker.git
+
+.) tag (http://git-scm.com/book/en/v2/Git-Basics-Tagging)
+     git tag -a <tag_name> <commit_sha> -m 'message'
+     git tag -a v0.1.2 -m 'tag v0.1.2'
+     git push origin v0.1.2
+     git checkout tags/v0.1.2
+     git checkout master
+     git show v0.1.2                    # show tag data 
+     git tag -n                         # show tag message (for annotated tags)
+     git ls-remote --tags --ref origin  # show tag git sha
+
+.) delete tag
+     git tag -d v3.6.2
+     git push origin -d v3.6.2
+
+.) rename tag
+     git tag new_tag old_tag
+     git push --tags
+     git tag -d old_tag
+     git push origin --delete old_tag
+
+.) show last commit
+     git show
+
+.) log
+     git log --pretty=format:"%h %an %s"
+     git cherry -v master                         # show only logs from branch
+     git log --name-status                        # full path names and status of changed files
+     git log --name-only                          # full path names of changed files
+     git log --stat                               # abbreviated pathnames and a diffstat of changed files
+     git log --oneline                            # show one line only 
+
+.) compare changes for a file between revisions:
+    git diff revision_1 revision_2 -- File_name
+
+.) kind of info
+     git remote show origin
+     git remote -v
+   
+.) revert uncommitted changes
+    .) revert single file
+        git checkout -- filename
+    .) revert all files
+        git reset --hard
+    .) revert git submodules
+        git submodule update --init
+
+.) revert the reverted merge (https://www.drupaldump.com/gitlab-revert-reverted-merge)
+     git pull master 
+     git checkout -b new_branch
+     git revert -m 1 37dsd67a48
+
+.) remove last commit
+  .) remove a commit done locally
+     git reset --soft HEAD^
+  .) remove a commit already pushed
+     git revert <commit-hash>
+   
+.) revert 
+     git revert commit_ref_sha
+     git revert HEAD    # revert last commit
+
+.) revert local commits 
+    .) moves the current branch backward by two commits and keep work done
+      git reset --soft HEAD~2
+    .) moves the current branch backward by two commits and deletes work done
+      git reset --head HEAD~2
+
+.) remove all files added since last commit
+     git clean -fd
+
+.) numeric versioning
+  .) git rev-list HEAD --count
+  -) http://programmers.stackexchange.com/questions/141973/how-do-you-achieve-a-numeric-versioning-scheme-with-git
+  Use tags to mark commits with version numbers:
+    .) git tag -a v2.5 -m 'Version 2.5'
+  Push tags upstream—this is not done by default:
+    .) git push --tags
+  Then use the describe command:
+    .) git describe --tags --long
+  This gives you a string of the format:
+    .) v2.5-0-deadbeef
+    .) v2.5 - last tag
+    .) 0 - number of commits since last tag
+    .) deadbeef - SHA of HEAD
+    
+.) editor
+    .) git config --global core.editor "vim"
+
+.) Github - Bitbucket mirroring
+    .) deanclatworthy.com/2013/01/how-to-avoid-relying-on-github-mirror-your-repository
+
+.) Get github repos:
+    .) $ curl --silent https://api.github.com/users/tecris/repos |grep '\"git_url\"' | awk -F': "' '{print $2}' | sed -e 's/",//g'
+
+=== MONOREPO ===
+https://github.com/babel/babel/blob/master/doc/design/monorepo.md
+
+=== K U B E C T L ===
+
+$ kubectl api-resources
+$ kubectl -n fluxcd get secret
+$ kubectl -n fluxcd delete secret fluxcd-git-deploy
+$ kubectl -n rango create secret generic regcred --from-literal=username='django' --from-literal=password='!admin*f9%6#76' --dry-run=client -o yaml | kubectl apply -f -
+$ kubectl -n fluxcd create secret generic fluxcd-git-deploy --from-file=identity=./id_rsa_bitbucket --dry-run=client -o yaml | kubectl apply -f -
+$ kubectl -n rango create secret generic postgrez --from-literal=password='!admin*f9%6#76'
+$ kubectl -n rango get secret postgrez --output="jsonpath={.data.password}" | base64 -d
+$ kubectl -n rango get secret ingress-tls-cert -o json
+$ kubectl -n rango get secret ingress-tls-cert --output="jsonpath={.data.tls\.crt}" | base64 -d          # alpine
+$ kubectl -n rango get secret ingress-tls-cert --output="jsonpath={.data.tls\.crt}" | base64 --decode    # ubuntu
+
+$ kubectl -n rango get po --field-selector=status.phase=Running
+$ kubectl -n rango get po --field-selector=status.phase=Running -o name -l app=test-service | xargs kubectl -n rango describe
+
+$ kubectl -n rango rollout restart deployment test-service
+
+
+=== H E L M ===
+
+$ helm -n rango get values --revision=13 test-service
+$ helm -n rango get values --revision=24 test-service -o json |jq [.resources]
+$ helm -n rango history test-service
+$ helm -n rango list
+$ helm -n rango status test-service
+
+=== jq ===
+$ az vm list | jq -r ".[] | select(.name == \"some_name\") | .id"
+$ az vm list | jq -r ".[] | {name,id} | select(.name == \"some_name\") | .id"
+# if above returns multiple entries(same value) and we need just one
+$ az vm list | jq -r "[.[] | {name,id} | select(.name == \"some_name\")][0] | .id"
+$ az vm list | jq -r ".[].name | select(startswith(\"who_am_i\"))"
+$ az vm list | jq -r ".tags.id"
+$ az vm list | jq -r ".tags | sort[] | select(startswith(\"tag_to_search\"))"
+$ az vm list | jq ".values[] | select(.display_name == \"rango here\") | {account_id}"
+
+
+=== M A V E N  ===
+
+.) Versions plugin. (mojohaus.org/versions-maven-plugin)
+     ..) mvn versions:display-dependency-updates   # display dependencies with newer versions available.
+     ..) mvn versions:use-latest-versions          # replaces any version with the latest version.
+     ..) mvn versions:update-properties            # sets properties to the latest versions of specific artifacts.
+     ..) mvn versions:display-plugin-updates       # displays all plugins that have newer versions available.
+     
+.) https://www.artifact-listener.org               # email notifications when newer artifacts versions are available on Maven Central
+
+.) Dependency plugin (maven.apache.org/plugins/maven-dependency-plugin)
+     ..) mvn dependency:tree
+     ..) mvn dependency:tree -Dincludes=org.springframework.kafka:spring-kafka
+     ..) mvn dependency:analyze -DignoreNonCompile=true
+
+.) Tidy Maven Plugin.(mojohaus.org/tidy-maven-plugin)
+     ..) mvn tidy:pom     # sort the sections of a pom.xml into the canonical order.
+
+.) mojohaus.org/exec-maven-plugin
+     ..) mvn exec:java -Dexec.mainClass=org.test.Main
+     
+.) archetype (maven-repository.com/archetypes)
+
+    mvn archetype:generate -Dfilter=serenity
+
+    mvn archetype:generate \
+      -DgroupId=org.demo.app \
+      -DartifactId=quickstart \
+      -DarchetypeArtifactId=maven-archetype-quickstart \
+      -DinteractiveMode=false
+      
+    mvn archetype:generate \
+      -DgroupId=org.demo.app \
+      -DartifactId=wildfly-html5 \
+      -DarchetypeGroupId=org.wildfly.archetype \
+      -DarchetypeArtifactId=wildfly-html5-mobile-archetype \
+      -DarchetypeVersion=8.2.0.Final \
+      -DinteractiveMode=false
+
+.) help for a plugin
+    mvn help:describe -DgroupId=org.flywaydb -DartifactId=flyway-maven-plugin -Dversion=3.2.1 -Dfull=true
+
+.) other
+     mvn site:site
+     mvn assembly:assembly
+     mvn install -DskipTests
+     mvn -Dwtpversion=2.0 eclipse:eclipse
+     mvn eclipse:eclipse
+     mvn eclipse:clean eclipse:eclipse -DdownloadSources=true
+     mvn eclipse:clean
+     mvn --dryRun release:prepare
+     mvn release:clean
+     mvn release:prepare
+
+.) show project version
+     $ mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec
+
+=== F O R G E ===
+forge -e "run forge_script.fsh"
+http://forge.jboss.org/document/hands-on-lab
+
+
+=== G I T H U B ===
+https://github.com/search?q=stars:%3E1&s=stars&type=Repositories   // show repos with most stars
+
+=== public ip address ===
+.) https://api.ipify.org/
+
+===  L I N U X  ===
+.) xargs basics -> https://shapeshed.com/unix-xargs/
+
+.) password
+     $ head -c32 /dev/urandom  | base64
+
+.) SSH port forwarding
+     $ ssh -L 8888:localhost:8888 HOSTNAME
+     and then open http://localhost:8888
+
+.) grep
+     .) OR Using \|
+          .) grep 'pattern1\|pattern2' filename
+     .) NOT using grep -v
+          .) grep -v 'pattern1' filename
+
+.) reduce pdf file size
+    .) ps2pdf -dPDFSETTINGS=/ebook input.pdf output.pdf
+
+.) merge pdf files
+    .) gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=merged.pdf a.pdf b.pdf
+
+.) search and replace
+     $ sed -i -e 's/string1/string2/g'
+     
+.) Nice sed tutorial https://gist.github.com/un33k/1162378
+
+.) # substitute "foo" with "bar" EXCEPT for lines which contain "baz"
+     $ sed '/baz/!s/foo/bar/g'
+
+.) recursive search and replace
+     $ grep -rl matchstring somedir/ | xargs sed -i 's/string1/string2/g'
+
+.) delete recursive svn folder
+     #!/bin/sh
+     echo "recursively removing .svn folders from"
+     pwd
+     rm -rf `find . -type d -name .svn`
+
+.) search for a file with find
+     $ find -iname \*lerts-properties-service.xml
+     $ find -iname \*lerts\*
+
+.) script to rename a directory
+
+     #! /bin/bash
+     # replace directory 'com' with 'org'
+     # Search and rename directories.
+
+     for filename in `find . -type d -name com`          #Traverse all files in directory.
+     do
+         fname=$filename                                 # Yes, this filename needs work.
+         n=`echo $fname | sed -e "s/com/org/g"`          # Substitute 
+         mv "$fname" "$n"                                # Do the actual renaming.
+     done   
+
+.) Find and trace process
+   $ ps auxww | grep java
+   $ $ strace -p <pid>
+
+.) List The Open Ports And The Process That Owns Them
+    $ sudo lsof -i
+..) id using port 8080 (tcp)
+    $ sudo lsof -i TCP:8080
+    $ sudo netstat -lptu
+
+.) SSH hardening
+     -) https://www.ibm.com/developerworks/aix/library/au-sshlocks
+
+.) Script to check if port open
+-------------------------------------------------
+#/bin/bash
+SERVER=127.0.0.1 PORT=5000
+if (: < /dev/tcp/$SERVER/$PORT) 2>/dev/null
+then
+    echo "Port $PORT is already used"
+else
+   echo "Port $PORT not used"
+fi
+-------------------------------------------------
+.) one liner check port open
+   $ nc -zvw 1 linuxfoundation.org 80
+
+.) tail -f server/default/log/server.log | awk '{print $2"\t"$4}'
+
+.) format json
+    $ cat mjson.tool | jq
+    $ python -mjson.tool j.txt
+
+.) xml formating
+    $ xmllint --format pom.xml > a.xml
+    # by default xmllint uses 2 spaces for indentation, to specify a different level set XMLLINT_INDENT variable. For exmaple for 4 spaces use
+    $ export XMLLINT_INDENT='    ';xmllint --format pom.xml > a.xml
+    $ xmllint utility comes with libxml2-utils
+
+.) curl (http://blogs.plexibus.com/2009/01/15/rest-esting-with-curl)
+
+    -) POST
+        $ curl -i -H "accept: application/json" -X POST -d "firstName=james" http://192.168.0.165/persons/person
+
+        where,
+        i - show response headers
+        H - pass request headers to the resource
+        X - pass a HTTP method name
+        d - pass in parameters enclosed in quotes; multiple parameters are separated by '&'
+            
+        The above command posts the first name "james" to the persons resource. Assuming the server creates a new person resource with first name of James, I also 
+        tell the server to return a json representation of the newly created resource.
+
+      .) Send file   
+        $ curl -i -H "content-type: text/xml" -d @request.xml http://localhost:8080/ws   # send file
+      .) Send json, expect json
+        $ curl -i -H "content-type: application/json" -H "accept: application/json" -X POST -d '{"name":"Salvador","iso":"SLV"}' http://localhost:8080/rest/country
+
+    -) GET
+        $ curl -i -H "accept: application/json" http://192.168.0.165/persons/person/1  
+
+    -) PUT
+        $ curl -i -H "accept: application/json" -X PUT -d "phone=1-800-999-9999" http://192.168.0.165/persons/person/1
+
+    -) DELETE
+        $ curl -i -H "accept: application/json" -X DELETE http://192.168.0.165/persons/person/1
+
+.) Random shuffle a file
+    $ shuf < inputfile > outputfile
+    $ sort -R > randomsortedfile
+
+.) Check available versions for a package
+     $ sudo apt-cache policy ansible   # check available versions for ansible
+
+.) show process and wrap lines
+     $ ps aux | less -S    # use arrow keys, or Esc-( and Esc-), or Alt-( and Alt-) 
+     $ ps aux | most       # use arrow keys, or < and > (Tab can also be used to scroll right)
+
+.) disk space
+    $ du -sh ./* | sort -h
+    $ df -h
+    $ lsblk
+    $ ncdu
+
+=== W E B D A V ===
+
+cadaver https://demo.org/repository/experimental/org/demo/tns
+konqueror webdavs://demo.org/repository/experimental/org/demo/tns/
+
+
+=== L O G 4 J ===
+www.javaworld.com/jw-11-2000/jw-1122-log4j.html
+
+The root category defaults to DEBUG, and following config are equivalent:
+  <root>
+    <appender-ref ref="FILE"/>
+  </root>
+
+and
+
+  <root>
+    <priority value="DEBUG" />
+    <appender-ref ref="FILE"/>
+  </root>
+
+If no category specified for a package/class it will inherit root category. 
+For example, messages with priority DEBUG or higher will be sent ot the 
+FILE appender.(The FILE appender will discard messages with priority lower 
+than ERROR)
+...
+    <appender name="FILE" ...
+         ...
+        <param name="Threshold" value="ERROR"/>
+        ...
+    </appender>
+    <root>
+        <priority value="DEBUG" />
+        <appender-ref ref="FILE"/>
+    </root>
+...
+
+Package org.apache category set to(restricted to) INFO, all other categories are
+inheriting the root category (WARN).
+FILE appender discards messages with priority LOWER than ERROR.
+...
+    <appender name="FILE" ...
+         ...
+        <param name="Threshold" value="ERROR"/>
+        ...
+    </appender>
+
+    <category name="org.apache">
+        <priority value="INFO"/>
+    </category>
+
+    <root>
+        <priority value="WARN" />
+        <appender-ref ref="FILE"/>
+    </root>
+...
+
+
+===  S O L A R I S  ===
+http://www.unixguide.net/sun/sunoneliners.shtml
+
+Grep
+ /usr/local/bin/grep
+ or
+ /usr/sfw/bin/ggrep
+
+ - recursive grep
+   find . | xargs grep 'Your Grep Value' 
+
+ - find file
+   find /opt/tibco/ -name "*tibe*"
+
+Tar
+ tar cvf - /home/ebs | gzip - > ebs.tar.gz 
+ gtar xzvf somefile.tar.gz
+
+Resource statistics for each thread of a server application. 
+ prstat -L -p 3295
+
+=== N O D E . J S ===
+
+https://github.com/angular-fullstack/generator-angular-fullstack
+https://github.com/DaftMonk/fullstack-demo
+https://www.npmjs.com/about
+
+.) Chat
+  https://github.com/sdelements/lets-chat
+
+=== O T H E R ===
+.) https://ozh.github.io/ascii-tables/ -> ASCII (separated)
+
+=== D O C K E R ===
+DNS
+  https://github.com/tianon/rawdns
+
+DNS with Docker (nice) ---
+  http://www.damagehead.com/blog/2015/04/28/deploying-a-dns-server-using-docker/
+
+Docker – a DNS server container ---
+  http://www.monblocnotes.com/node/2074
+
+How ubuntu:14.04.1 image is built ---
+  http://www.monblocnotes.com/node/2072
+
+Docker containers on desktop ---
+  https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
+  https://github.com/jfrazelle/dockerfiles
+
+Email
+  http://www.centurylinklabs.com/tutorials/killing-your-outlook-with-docker-and-davmail
+
+=== T E C H N O  ===
+JEE 
+  http://blog.eisele.net/2015/12/a-refresher-top-10-java-ee-7-backend.html
+
+Build number
+  http://www.jayway.com/2012/04/07/continuous-deployment-versioning-and-git
+  
+Java properties
+  http://owner.aeonbits.org/docs/reload/
+
+JPA - sequence generator
+  http://www.javabeat.net/jpa-annotations-generatedvalue-sequencegenerator-tablegenerator
+http://gafter.blogspot.com/2008/01/is-java-dying.html
+
+Reflecting generics
+  http://www.artima.com/weblogs/viewpost.jsp?thread=208860
+   
+Generics erasure
+  http://gafter.blogspot.com/2004/09/puzzling-through-erasure-answer.html   
+   
+Super Type Tokens
+  http://www.artima.com/weblogs/viewpost.jsp?thread=206350 
+  http://gafter.blogspot.com/2006/12/super-type-tokens.html  
+
+Factories with Generics
+  www.developerdotstar.com/mag/articles/troche_factorychain.html
+
+Guidelines for using volatile variables
+  www.ibm.com/developerworks/java/library/j-jtp06197.html
+
+Threads
+  www.briangoetz.com/pubs.html
+  www.baptiste-wicht.com/2010/08/java-concurrency-part-4-semaphores
+  tutorials.jenkov.com/java-concurrency/index.html
+  www.artima.com/insidejvm/ed2/jvm2.html
+
+Stack and heap
+  http://www.javatutorialhub.com/java-stack-heap.html
+
+ThreadLocal
+  www.ibm.com/developerworks/java/library/j-threads3.html
+
+Understanding Java Multithreading and Read-Write Locks
+  www.developer.com/java/article.php/951051
+
+@XmlRootElement
+  weblogs.java.net/blog/kohsuke/archive/2006/03/why_does_jaxb_p.html
+  jsexton0.blogspot.com/2009/02/marshalling-and-unmarshalling-without.html
+
+http://jaxb.java.net/guide/Customizing_Java_packages.html
+
+Generate an XML Document from an Object Model with JAXB 2
+  www.devx.com/Java/Article/34069/1763/page/3
+
+Fork and Join, Parallel Programming
+   http://www.oracle.com/technetwork/articles/java/fork-join-422606.html
+
+OpenMQ
+   http://mq.java.net
+
+Apache Qpid (Advanced Message Queueing Protocol)
+   http://qpid.apache.org
+  
+12Factor
+  http://12factor.net
+  
+Alternative java web frameworks
+  sparkjava.com
+  ratpack.io
+
+BULK
+  https://blog.codecentric.de/en/2011/03/automated-acceptance-testing-using-jbehave
+  https://blog.codecentric.de/en/2012/06/jbehave-configuration-tutorial
+  http://www.thucydides.info/docs/serenity
+  http://en.wikipedia.org/wiki/Specification_by_example
+
+===  S V N  ===
+
+ .) tag
+    svn copy http://subversion/project/trunk \
+         http://subversion/project/tags/project-0.0.2 \
+         -m "Tagging the -r xx version as the X.X.X release"
+
+ .) Roll back to version 15898
+    svn merge -r HEAD:15898 http://subversion/svn/project/trunk .
+
+ .) Roll back to a version
+    svn merge -rXX:YY (YY is the number of the revision you want to revert to)
+
+ .) Merge from trunk into
+      Merge in the current directory changes that occurred in the trunk from 
+      revision 15933 to 16026 
+        svn merge http://subversion/svn/project/trunk -r15933:16026 .
+
+.) Ignore
+    on 'svn status' ignore these files
+    ..) Create file ("a_file") with file patterns svn to ignore.
+    ..) Then run the command,
+        svn propset svn:ignore . -F file_name
+        ...) recursive
+            svn -R propset svn:ignore . -F file_name
+    ..) Edit.
+        svn propedit svn:ignore .
+
+.) Diff
+    'svn diff --diff-cmd diff -x -uw /path/to/file'
+
+.) Set svn editor
+    export SVN_EDITOR=vi
+
+.) Create svn project
+     mkdir -p test/my_project
+     cd test/my_project
+     mkdir -p trunk/my_module tags branches
+     cd ../..
+     svn import my_project http://subversion/my_project -m "First Import"
+
+.) svn copy http://subversion/svn/some_location http://subversion/svn/other_location -m 'a comment'
+
+.) svn move http://subversion/svn/some_location http://subversion/svn/other_location -m 'a comment'
+
+.) non recursive checkout
+    svn checkout --non-recursive http://svnserver/trunk/ proj
+
+.) Check modifications on server
+    svn st -u
+
+.) Show annotations (aka blame)
+    svn blame file_name
+
+.) Setting svn mime type to text
+    svn propset svn:mime-type text/plain pom.xml
+
